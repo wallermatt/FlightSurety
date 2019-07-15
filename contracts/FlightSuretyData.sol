@@ -100,10 +100,12 @@ contract FlightSuretyData {
     */   
     function registerAirline
                             (   
+                                address airline
                             )
                             external
-                            pure
+   
     {
+        require(msg.sender == contractOwner, 'Only App contract can call data contract');
     }
 
 
