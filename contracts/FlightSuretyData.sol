@@ -12,10 +12,13 @@ contract FlightSuretyData {
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
 
+    mapping(address => bool) private registeredAppContracts;            // List of registered app addresses address
+
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
-
+    event registeredAppContract(address appContract);
+    event deRegisteredAppContract(address appContract);
 
     /**
     * @dev Constructor
@@ -56,6 +59,15 @@ contract FlightSuretyData {
         _;
     }
 
+    /**
+    * @dev Modifier that requires the "ContractOwner" account to be the function caller
+    */
+    modifier requireRegisteredAppContract()
+    {
+        require(isSenderRegisteredAppContract(), "Caller is not registered app contract");
+        _;
+    }
+
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
@@ -73,6 +85,19 @@ contract FlightSuretyData {
         return operational;
     }
 
+    /**
+    * @dev Get registered app contract status of address
+    *
+    * @return A bool is caller registered as an app contract
+    */      
+    function isSenderRegisteredAppContract() 
+                            public 
+                            view 
+                            returns(bool) 
+    {
+        return registeredAppContracts[msg.sender];
+    }
+
 
     /**
     * @dev Sets contract operations on/off
@@ -84,7 +109,7 @@ contract FlightSuretyData {
                                 bool mode
                             ) 
                             external
-                            requireContractOwner 
+                            requireContractOwner
     {
         operational = mode;
     }
@@ -92,6 +117,40 @@ contract FlightSuretyData {
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
+
+    /**
+    * @dev register n app contract so that it can call functions in the data contract
+    *
+    */   
+    function registerAppContract
+                            (   
+                                address appContract
+                            )
+                            external
+                            requireIsOperational
+                            requireContractOwner
+   
+    {
+        registeredAppContracts[appContract] = true;
+        emit registeredAppContract(appContract);
+    }
+
+    /**
+    * @dev register n app contract so that it can call functions in the data contract
+    *
+    */   
+    function deRegisterAppContract
+                            (   
+                                address appContract
+                            )
+                            external
+                            requireIsOperational
+                            requireContractOwner
+   
+    {
+        registeredAppContracts[appContract] = false;
+        emit deRegisteredAppContract(appContract);
+    }
 
    /**
     * @dev Add an airline to the registration queue
@@ -103,9 +162,10 @@ contract FlightSuretyData {
                                 address airline
                             )
                             external
+                            requireRegisteredAppContract
    
     {
-        require(msg.sender == contractOwner, 'Only App contract can call data contract');
+        
     }
 
 

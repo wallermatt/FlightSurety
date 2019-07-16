@@ -82,7 +82,7 @@ contract FlightSuretyApp {
     {
         contractOwner = msg.sender;
         flightsuretydata = FlightSuretyData(dataContract);
-        flightsuretydata.registerAirline(0x0ba10be8a315c0e9bd6d8a2288ec263940c2b54e);
+        flightsuretydata.registerAirline(0x0BA10BE8A315C0e9BD6D8a2288EC263940C2B54e);
     }
 
     /********************************************************************************************/
