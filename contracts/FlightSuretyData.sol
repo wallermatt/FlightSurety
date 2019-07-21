@@ -14,11 +14,21 @@ contract FlightSuretyData {
 
     mapping(address => bool) private registeredAppContracts;            // List of registered app addresses address
 
+    struct airline {
+        string code;
+        string name;
+        bool registered;
+        bool paid;
+    }
+
+    mapping(address => airline) private registeredAirlines;
+
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
     event registeredAppContract(address appContract);
     event deRegisteredAppContract(address appContract);
+    event airlineRegistered(address airline);
 
     /**
     * @dev Constructor
@@ -30,6 +40,13 @@ contract FlightSuretyData {
                                 public 
     {
         contractOwner = msg.sender;
+        registeredAppContracts[this] = true;
+        emit registeredAppContract(this);
+        //registerAirline(msg.sender, 'BA', 'British Airways');
+        registeredAirlines[contractOwner].code = 'BA';
+        registeredAirlines[contractOwner].name = 'British Airways';
+        registeredAirlines[contractOwner].registered = true;
+        emit airlineRegistered(contractOwner);
     }
 
     /********************************************************************************************/
@@ -159,13 +176,19 @@ contract FlightSuretyData {
     */   
     function registerAirline
                             (   
-                                address airline
+                                address airline,
+                                string code,
+                                string name
                             )
-                            external
+                            public
+                            requireIsOperational
                             requireRegisteredAppContract
    
     {
-        
+        registeredAirlines[airline].code = code;
+        registeredAirlines[airline].name = name;
+        registeredAirlines[airline].registered = true;
+        emit airlineRegistered(airline);
     }
 
 

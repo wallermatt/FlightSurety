@@ -82,7 +82,6 @@ contract FlightSuretyApp {
     {
         contractOwner = msg.sender;
         flightsuretydata = FlightSuretyData(dataContract);
-        flightsuretydata.registerAirline(0x0BA10BE8A315C0e9BD6D8a2288EC263940C2B54e);
     }
 
     /********************************************************************************************/
@@ -108,12 +107,14 @@ contract FlightSuretyApp {
     */   
     function registerAirline
                             ( 
-                                address airline  
+                                address airline,
+                                string code,
+                                string name 
                             )
                             external
                             returns(bool success, uint256 votes)
     {
-        flightsuretydata.registerAirline(airline);
+        flightsuretydata.registerAirline(airline, code, name);
         return (success, 0);
     }
 
@@ -344,5 +345,5 @@ contract FlightSuretyApp {
 }
 
 contract FlightSuretyData {
-    function registerAirline(address airline) external;
+    function registerAirline(address airline, string code, string name) external;
 }
