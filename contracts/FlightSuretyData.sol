@@ -46,6 +46,7 @@ contract FlightSuretyData {
         registeredAirlines[contractOwner].code = 'BA';
         registeredAirlines[contractOwner].name = 'British Airways';
         registeredAirlines[contractOwner].registered = true;
+        registeredAirlines[contractOwner].paid = true;
         emit airlineRegistered(contractOwner);
     }
 
