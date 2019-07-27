@@ -90,9 +90,10 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
-  //it('Initial airline registered on deployment', async () => {
-
-  //});
+  it('Initial airline registered on deployment', async () => {
+      let count = await config.flightSuretyData.getRegisteredAndPaidAirlineCount.call();
+      assert.equal(count, 1, "Airline not registered on deployment")
+  });
  
 
 });

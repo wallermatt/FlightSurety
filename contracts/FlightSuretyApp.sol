@@ -346,4 +346,7 @@ contract FlightSuretyApp {
 
 contract FlightSuretyData {
     function registerAirline(address airline, string code, string name) external;
+    function isAirline(address airline) external;
+    function isPaidAirline(address airline) external;
+    function getRegisteredAndPaidAirlineCount() external;
 }

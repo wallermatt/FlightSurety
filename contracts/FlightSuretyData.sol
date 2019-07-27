@@ -19,9 +19,12 @@ contract FlightSuretyData {
         string name;
         bool registered;
         bool paid;
+        uint votes;
     }
 
     mapping(address => airline) private registeredAirlines;
+
+    address[] airlineList;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -47,6 +50,7 @@ contract FlightSuretyData {
         registeredAirlines[contractOwner].name = 'British Airways';
         registeredAirlines[contractOwner].registered = true;
         registeredAirlines[contractOwner].paid = true;
+        airlineList.push(contractOwner);
         emit airlineRegistered(contractOwner);
     }
 
@@ -85,6 +89,7 @@ contract FlightSuretyData {
         require(isSenderRegisteredAppContract(), "Caller is not registered app contract");
         _;
     }
+
 
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
@@ -132,6 +137,7 @@ contract FlightSuretyData {
         operational = mode;
     }
 
+    
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
@@ -181,7 +187,7 @@ contract FlightSuretyData {
                                 string code,
                                 string name
                             )
-                            public
+                            external
                             requireIsOperational
                             requireRegisteredAppContract
    
@@ -189,7 +195,42 @@ contract FlightSuretyData {
         registeredAirlines[airline].code = code;
         registeredAirlines[airline].name = name;
         registeredAirlines[airline].registered = true;
+        airlineList.push(airline);
         emit airlineRegistered(airline);
+    }
+
+    function isAirline
+                        (
+                            address airline
+                        )
+                        external
+                        returns(bool)
+    {
+        return registeredAirlines[airline].registered;
+    }
+
+    function isPaidAirline
+                        (
+                            address airline
+                        )
+                        external
+                        returns(bool)
+    {
+        return registeredAirlines[airline].paid;
+    }
+
+    function getRegisteredAndPaidAirlineCount()
+                                            external
+                                            returns(uint32)
+    {
+        uint32 count = 0;
+        for (uint i=0; i<airlineList.length; i++) {
+            address currentAirline = airlineList[i];
+            if(registeredAirlines[currentAirline].registered && registeredAirlines[currentAirline].paid){
+               count = count + 1; 
+            }
+        }
+        return count;
     }
 
 
