@@ -17,12 +17,13 @@ contract FlightSuretyData {
     struct airline {
         string code;
         string name;
+        bool mapped;
         bool registered;
         bool paid;
         uint votes;
     }
 
-    mapping(address => airline) private registeredAirlines;
+    mapping(address => airline) private mappedAirlines;
 
     address[] airlineList;
 
@@ -185,7 +186,9 @@ contract FlightSuretyData {
                             (   
                                 address airline,
                                 string code,
-                                string name
+                                string name,
+                                registered,
+                                votes
                             )
                             external
                             requireIsOperational
@@ -194,7 +197,10 @@ contract FlightSuretyData {
     {
         registeredAirlines[airline].code = code;
         registeredAirlines[airline].name = name;
-        registeredAirlines[airline].registered = true;
+        registeredAirlines[airline].registered = registered;
+        registeredAirlines[airline].paid = false;
+        registeredAirlines[airline].votes = votes;
+        if (not registeredAirlines[airline].code )
         airlineList.push(airline);
         emit airlineRegistered(airline);
     }
