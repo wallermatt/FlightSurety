@@ -78,12 +78,12 @@ contract('Flight Surety Tests', async (accounts) => {
 
     // ACT
     try {
-        await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
+        await config.flightSuretyApp.registerAirline(newAirline, 'TEST', 'Test Airline', {from: config.firstAirline});
     }
     catch(e) {
 
     }
-    let result = await config.flightSuretyData.isAirline.call(newAirline); 
+    let result = await config.flightSuretyData.isRegisteredAirline.call(newAirline, {from: config.flightSuretyApp.address}); 
 
     // ASSERT
     assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
@@ -91,8 +91,35 @@ contract('Flight Surety Tests', async (accounts) => {
   });
 
   it('Initial airline registered on deployment', async () => {
-      let count = await config.flightSuretyData.getRegisteredAndPaidAirlineCount.call();
+      let count = await config.flightSuretyData.getPaidAirlineCount.call({from: config.flightSuretyApp.address});
       assert.equal(count, 1, "Airline not registered on deployment")
+  });
+
+  it('(airline) can register an Airline using registerAirline() if it is funded', async () => {
+    
+    // ARRANGE
+    let newAirline = accounts[2];
+
+    // ACT
+    try {
+        await config.flightSuretyApp.registerAirline(newAirline, 'TEST', 'Test Airline', {from: config.owner});
+    }
+    catch(e) {
+
+    }
+
+    let votes = await config.flightSuretyData.getAirlineVotes.call(newAirline, {from: config.flightSuretyApp.address})
+    console.log("VOTES", votes);
+    let paid = await config.flightSuretyData.isPaidAirline.call(config.owner, {from: config.flightSuretyApp.address})
+    console.log("PAID", paid);
+    let reg = await config.flightSuretyData.isRegisteredAirline.call(newAirline, {from: config.flightSuretyApp.address}); 
+    console.log("REG", reg);
+    let pc = await config.flightSuretyData.getPaidAirlineCount.call({from: config.flightSuretyApp.address}); 
+    console.log("PAID Count", pc);
+    // ASSERT
+    let result = await config.flightSuretyData.isRegisteredAirline.call(newAirline, {from: config.flightSuretyApp.address}); 
+    assert.equal(result, true, "Airline should not be able to register another airline if it hasn't provided funding");
+
   });
  
 

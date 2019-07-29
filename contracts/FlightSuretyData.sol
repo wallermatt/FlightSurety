@@ -17,15 +17,14 @@ contract FlightSuretyData {
     struct airline {
         string code;
         string name;
-        bool mapped;
         bool registered;
         bool paid;
         uint votes;
     }
 
-    mapping(address => airline) private mappedAirlines;
+    mapping(address => airline) private registeredAirlines;
 
-    address[] airlineList;
+    address[] registeredAirlineList;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -46,12 +45,11 @@ contract FlightSuretyData {
         contractOwner = msg.sender;
         registeredAppContracts[this] = true;
         emit registeredAppContract(this);
-        //registerAirline(msg.sender, 'BA', 'British Airways');
         registeredAirlines[contractOwner].code = 'BA';
         registeredAirlines[contractOwner].name = 'British Airways';
         registeredAirlines[contractOwner].registered = true;
         registeredAirlines[contractOwner].paid = true;
-        airlineList.push(contractOwner);
+        registeredAirlineList.push(contractOwner);
         emit airlineRegistered(contractOwner);
     }
 
@@ -90,6 +88,7 @@ contract FlightSuretyData {
         require(isSenderRegisteredAppContract(), "Caller is not registered app contract");
         _;
     }
+
 
 
     /********************************************************************************************/
@@ -187,32 +186,50 @@ contract FlightSuretyData {
                                 address airline,
                                 string code,
                                 string name,
-                                registered,
-                                votes
+                                bool registered,
+                                uint votes
                             )
                             external
                             requireIsOperational
                             requireRegisteredAppContract
    
     {
+        require(registeredAirlines[airline].registered == false, 'Airline already registered');
         registeredAirlines[airline].code = code;
         registeredAirlines[airline].name = name;
         registeredAirlines[airline].registered = registered;
         registeredAirlines[airline].paid = false;
-        registeredAirlines[airline].votes = votes;
-        if (not registeredAirlines[airline].code )
-        airlineList.push(airline);
-        emit airlineRegistered(airline);
+        registeredAirlines[airline].votes = registeredAirlines[airline].votes + 1;
+        if (registered) {
+            registeredAirlineList.push(airline);
+            emit airlineRegistered(airline);
+        }
     }
 
-    function isAirline
+
+    function isRegisteredAirline
                         (
                             address airline
                         )
                         external
+                        requireIsOperational
+                        requireRegisteredAppContract
                         returns(bool)
     {
         return registeredAirlines[airline].registered;
+    }
+
+
+    function getAirlineVotes
+                        (
+                            address airline
+                        )
+                        external
+                        requireIsOperational
+                        requireRegisteredAppContract
+                        returns(uint)
+    {
+        return registeredAirlines[airline].votes;
     }
 
     function isPaidAirline
@@ -220,19 +237,33 @@ contract FlightSuretyData {
                             address airline
                         )
                         external
+                        requireIsOperational
+                        requireRegisteredAppContract
                         returns(bool)
     {
         return registeredAirlines[airline].paid;
     }
 
-    function getRegisteredAndPaidAirlineCount()
+
+    function getRegisteredAirlineCount()
                                             external
-                                            returns(uint32)
+                                            requireIsOperational
+                                            requireRegisteredAppContract
+                                            returns(uint256)
+    {
+        return registeredAirlineList.length;
+    }
+    
+    function getPaidAirlineCount()
+                                            external
+                                            requireIsOperational
+                                            requireRegisteredAppContract
+                                            returns(uint256)
     {
         uint32 count = 0;
-        for (uint i=0; i<airlineList.length; i++) {
-            address currentAirline = airlineList[i];
-            if(registeredAirlines[currentAirline].registered && registeredAirlines[currentAirline].paid){
+        for (uint i=0; i<registeredAirlineList.length; i++) {
+            address currentAirline = registeredAirlineList[i];
+            if(registeredAirlines[currentAirline].paid){
                count = count + 1; 
             }
         }

@@ -112,10 +112,21 @@ contract FlightSuretyApp {
                                 string name 
                             )
                             external
-                            returns(bool success, uint256 votes)
+                            returns(bool success, uint newVotes)
     {
-        flightsuretydata.registerAirline(airline, code, name);
-        return (success, 0);
+        require(flightsuretydata.isPaidAirline(msg.sender), 'Sender not paid airline therefore cannot register another airline');
+        bool registered = false;
+        uint votes = flightsuretydata.getAirlineVotes(airline);
+        uint256 paidAirlineCount = flightsuretydata.getPaidAirlineCount();
+        if (paidAirlineCount <= 4){
+            registered = true;
+        } else {
+            if (votes > paidAirlineCount / 2) {
+                registered = true;
+            }
+        }
+        flightsuretydata.registerAirline(airline, code, name, registered);
+        return (registered, flightsuretydata.getAirlineVotes(airline));
     }
 
 
@@ -345,8 +356,10 @@ contract FlightSuretyApp {
 }
 
 contract FlightSuretyData {
-    function registerAirline(address airline, string code, string name) external;
-    function isAirline(address airline) external;
-    function isPaidAirline(address airline) external;
-    function getRegisteredAndPaidAirlineCount() external;
+    function registerAirline(address airline, string code, string name, bool registered) external;
+    function isRegisteredAirline(address airline) external view returns(bool);
+    function isPaidAirline(address airline) external view returns(bool);
+    function getAirlineVotes(address airline) external view returns(uint);
+    function getRegisteredAirlineCount() external  view returns(uint256);
+    function getPaidAirlineCount() external  view returns(uint256);
 }
