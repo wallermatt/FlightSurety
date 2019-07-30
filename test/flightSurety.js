@@ -71,24 +71,6 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
-  it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
-    
-    // ARRANGE
-    let newAirline = accounts[2];
-
-    // ACT
-    try {
-        await config.flightSuretyApp.registerAirline(newAirline, 'TEST', 'Test Airline', {from: config.firstAirline});
-    }
-    catch(e) {
-
-    }
-    let result = await config.flightSuretyData.isRegisteredAirline.call(newAirline, {from: config.flightSuretyApp.address}); 
-
-    // ASSERT
-    assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
-
-  });
 
   it('Initial airline registered on deployment', async () => {
       let count = await config.flightSuretyData.getPaidAirlineCount.call({from: config.flightSuretyApp.address});
@@ -108,17 +90,76 @@ contract('Flight Surety Tests', async (accounts) => {
 
     }
 
-    let votes = await config.flightSuretyData.getAirlineVotes.call(newAirline, {from: config.flightSuretyApp.address})
-    console.log("VOTES", votes);
-    let paid = await config.flightSuretyData.isPaidAirline.call(config.owner, {from: config.flightSuretyApp.address})
-    console.log("PAID", paid);
-    let reg = await config.flightSuretyData.isRegisteredAirline.call(newAirline, {from: config.flightSuretyApp.address}); 
-    console.log("REG", reg);
-    let pc = await config.flightSuretyData.getPaidAirlineCount.call({from: config.flightSuretyApp.address}); 
-    console.log("PAID Count", pc);
     // ASSERT
     let result = await config.flightSuretyData.isRegisteredAirline.call(newAirline, {from: config.flightSuretyApp.address}); 
-    assert.equal(result, true, "Airline should not be able to register another airline if it hasn't provided funding");
+    assert.equal(result, true, "Paid airline should be able to register another airline");
+
+  });
+
+  it('(airline) cannot register an Airline using registerAirline() if it is not funded', async () => {
+    
+    // ARRANGE
+    let newAirline = accounts[2];
+    let newerAirline = accounts[3];
+
+    // ACT
+    try {
+        await config.flightSuretyApp.registerAirline(newerAirline, 'TEST2', 'Test Airline2', {from: newAirline});
+    }
+    catch(e) {
+
+    }
+    let result = await config.flightSuretyData.isRegisteredAirline.call(newerAirline, {from: config.flightSuretyApp.address}); 
+
+    // ASSERT
+    assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
+
+  });
+
+  it('Only 4 airlines can be registered by single airline before multi-party consensus is required', async () => {
+    
+    // ARRANGE
+
+    let airline3 = accounts[3];
+    let airline4 = accounts[4];
+    let airline5 = accounts[5];
+
+    // ACT
+    try {
+        await config.flightSuretyApp.registerAirline(airline3, 'TEST3', 'Test Airline3', {from: config.owner});
+    }
+    catch(e) {
+
+    }
+    let result3 = await config.flightSuretyData.isRegisteredAirline.call(airline3, {from: config.flightSuretyApp.address}); 
+
+    // ASSERT
+    assert.equal(result3, true, "Airline should be able to register new airline if 4 or less airlines registered");
+
+    // ACT
+    try {
+        await config.flightSuretyApp.registerAirline(airline4, 'TEST4', 'Test Airline4', {from: config.owner});
+    }
+    catch(e) {
+
+    }
+    let result4 = await config.flightSuretyData.isRegisteredAirline.call(airline4, {from: config.flightSuretyApp.address}); 
+
+    // ASSERT
+    assert.equal(result4, true, "Airline should be able to register new airline if 4 or less airlines registered");
+
+    // ACT
+    try {
+        await config.flightSuretyApp.registerAirline(airline5, 'TEST5', 'Test Airline5', {from: config.owner});
+    }
+    catch(e) {
+
+    }
+    let result5 = await config.flightSuretyData.isRegisteredAirline.call(airline5, {from: config.flightSuretyApp.address}); 
+
+    // ASSERT
+    assert.equal(result5, false, "Airline should be able to register new airline if 4 or less airlines registered");
+
 
   });
  

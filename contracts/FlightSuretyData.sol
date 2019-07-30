@@ -33,6 +33,9 @@ contract FlightSuretyData {
     event deRegisteredAppContract(address appContract);
     event airlineRegistered(address airline);
 
+    event debugDataEvent(string info);
+    event debugDataInt(uint256 number);
+    event debugDataBool(bool flag);
     /**
     * @dev Constructor
     *      The deploying account becomes contractOwner
@@ -186,21 +189,26 @@ contract FlightSuretyData {
                                 address airline,
                                 string code,
                                 string name,
-                                bool registered,
-                                uint votes
+                                bool registered
                             )
                             external
                             requireIsOperational
                             requireRegisteredAppContract
    
     {
+        emit debugDataEvent('data_registered_start');
+        emit debugDataBool(registered);
         require(registeredAirlines[airline].registered == false, 'Airline already registered');
         registeredAirlines[airline].code = code;
         registeredAirlines[airline].name = name;
         registeredAirlines[airline].registered = registered;
         registeredAirlines[airline].paid = false;
         registeredAirlines[airline].votes = registeredAirlines[airline].votes + 1;
+        emit debugDataEvent('data_registered');
+        emit debugDataBool(registered);
         if (registered) {
+            emit debugDataEvent('data_if_reg');
+            emit debugDataBool(registered);
             registeredAirlineList.push(airline);
             emit airlineRegistered(airline);
         }
@@ -251,6 +259,8 @@ contract FlightSuretyData {
                                             requireRegisteredAppContract
                                             returns(uint256)
     {
+        emit debugDataEvent('data_count');
+        emit debugDataInt(registeredAirlineList.length);
         return registeredAirlineList.length;
     }
     

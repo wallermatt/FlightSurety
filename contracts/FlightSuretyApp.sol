@@ -37,7 +37,9 @@ contract FlightSuretyApp {
     }
     mapping(bytes32 => Flight) private flights;
 
- 
+    event debugEvent(string info);
+    event debugInt(uint256 number);
+    event debugBool(bool flag);
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
     /********************************************************************************************/
@@ -179,7 +181,18 @@ contract FlightSuretyApp {
                                             });
 
         emit OracleRequest(index, airline, flight, timestamp);
-    } 
+    }
+
+    function airlinePay
+                        (
+                            address airline
+                        )
+    function()
+        external
+        payable
+    {
+
+    }
 
 
 // region ORACLE MANAGEMENT
