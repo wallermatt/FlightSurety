@@ -32,6 +32,7 @@ contract FlightSuretyData {
     event registeredAppContract(address appContract);
     event deRegisteredAppContract(address appContract);
     event airlineRegistered(address airline);
+    event airlinePaidEvent(address airline);
 
     event debugDataEvent(string info);
     event debugDataInt(uint256 number);
@@ -196,22 +197,29 @@ contract FlightSuretyData {
                             requireRegisteredAppContract
    
     {
-        emit debugDataEvent('data_registered_start');
-        emit debugDataBool(registered);
         require(registeredAirlines[airline].registered == false, 'Airline already registered');
         registeredAirlines[airline].code = code;
         registeredAirlines[airline].name = name;
         registeredAirlines[airline].registered = registered;
         registeredAirlines[airline].paid = false;
         registeredAirlines[airline].votes = registeredAirlines[airline].votes + 1;
-        emit debugDataEvent('data_registered');
-        emit debugDataBool(registered);
         if (registered) {
-            emit debugDataEvent('data_if_reg');
-            emit debugDataBool(registered);
             registeredAirlineList.push(airline);
             emit airlineRegistered(airline);
         }
+    }
+
+
+    function airlinePaid
+                        (
+                            address airline
+                        )
+                        external
+                        requireIsOperational
+                        requireRegisteredAppContract
+    {
+        registeredAirlines[airline].paid = true;
+        emit airlinePaidEvent(airline);
     }
 
 

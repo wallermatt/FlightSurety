@@ -120,9 +120,13 @@ contract('Flight Surety Tests', async (accounts) => {
     
     // ARRANGE
 
+    let airline2 = accounts[2];
     let airline3 = accounts[3];
     let airline4 = accounts[4];
     let airline5 = accounts[5];
+    let airline6 = accounts[6];
+
+    await config.flightSuretyApp.airlinePay({from: airline2, value: web3.utils.toWei('10', 'ether')});
 
     // ACT
     try {
@@ -136,6 +140,8 @@ contract('Flight Surety Tests', async (accounts) => {
     // ASSERT
     assert.equal(result3, true, "Airline should be able to register new airline if 4 or less airlines registered");
 
+    await config.flightSuretyApp.airlinePay({from: airline3, value: web3.utils.toWei('10', 'ether')});
+
     // ACT
     try {
         await config.flightSuretyApp.registerAirline(airline4, 'TEST4', 'Test Airline4', {from: config.owner});
@@ -148,6 +154,8 @@ contract('Flight Surety Tests', async (accounts) => {
     // ASSERT
     assert.equal(result4, true, "Airline should be able to register new airline if 4 or less airlines registered");
 
+    await config.flightSuretyApp.airlinePay({from: airline4, value: web3.utils.toWei('10', 'ether')});
+
     // ACT
     try {
         await config.flightSuretyApp.registerAirline(airline5, 'TEST5', 'Test Airline5', {from: config.owner});
@@ -158,7 +166,66 @@ contract('Flight Surety Tests', async (accounts) => {
     let result5 = await config.flightSuretyData.isRegisteredAirline.call(airline5, {from: config.flightSuretyApp.address}); 
 
     // ASSERT
-    assert.equal(result5, false, "Airline should be able to register new airline if 4 or less airlines registered");
+    assert.equal(result5, true, "Airline should be able to register new airline if 4 or less airlines registered");
+
+    await config.flightSuretyApp.airlinePay({from: airline5, value: web3.utils.toWei('10', 'ether')});
+
+     // ACT
+    try {
+        await config.flightSuretyApp.registerAirline(airline6, 'TEST6', 'Test Airline6', {from: config.owner});
+    }
+    catch(e) {
+
+    }
+    let result6 = await config.flightSuretyData.isRegisteredAirline.call(airline6, {from: config.flightSuretyApp.address}); 
+
+    // ASSERT
+    assert.equal(result6, false, "Single airline registration should be false when 5 paid airlines are registered");
+
+  });
+
+  it('Multi-party consensus - half registered and paid airlines required to register airline', async () => {
+    
+    // ARRANGE
+
+    let airline2 = accounts[2];
+    let airline3 = accounts[3];
+    let airline4 = accounts[4];
+    let airline5 = accounts[5];
+    let airline6 = accounts[6];
+
+    let votes1 = await config.flightSuretyData.getAirlineVotes.call(airline6, {from: config.flightSuretyApp.address});
+    assert.equal(votes1, 1, 'Initial votes should be one');
+
+     // ACT
+     try {
+        await config.flightSuretyApp.registerAirline(airline6, 'TEST6', 'Test Airline6', {from: airline2});
+    }
+    catch(e) {
+
+    }
+    let result1 = await config.flightSuretyData.isRegisteredAirline.call(airline6, {from: config.flightSuretyApp.address}); 
+
+    // ASSERT
+    assert.equal(result1, false, "Airline needs half total paid airlines to register it");
+
+    let votes2 = await config.flightSuretyData.getAirlineVotes.call(airline6, {from: config.flightSuretyApp.address});
+    assert.equal(votes2, 2, 'Votes should be two');
+
+    // ACT
+    try {
+        await config.flightSuretyApp.registerAirline(airline6, 'TEST6', 'Test Airline6', {from: airline2});
+    }
+    catch(e) {
+
+    }
+    let result2 = await config.flightSuretyData.isRegisteredAirline.call(airline6, {from: config.flightSuretyApp.address}); 
+
+    // ASSERT
+    assert.equal(result2, true, "Airline needs half total paid airlines to register it");
+
+    let votes3 = await config.flightSuretyData.getAirlineVotes.call(airline6, {from: config.flightSuretyApp.address});
+    assert.equal(votes3, 3, 'Votes should be three');
 
 
   });

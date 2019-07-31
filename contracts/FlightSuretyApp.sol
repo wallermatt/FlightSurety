@@ -55,7 +55,7 @@ contract FlightSuretyApp {
     modifier requireIsOperational() 
     {
          // Modify to call data contract's status
-        require(true, "Contract is currently not operational");  
+        require(isOperational(), "Contract is currently not operational");  
         _;  // All modifiers require an "_" which indicates where the function body will be added
     }
 
@@ -80,7 +80,7 @@ contract FlightSuretyApp {
                                 (
                                     address dataContract
                                 ) 
-                                public 
+                                public
     {
         contractOwner = msg.sender;
         flightsuretydata = FlightSuretyData(dataContract);
@@ -118,7 +118,7 @@ contract FlightSuretyApp {
     {
         require(flightsuretydata.isPaidAirline(msg.sender), 'Sender not paid airline therefore cannot register another airline');
         bool registered = false;
-        uint votes = flightsuretydata.getAirlineVotes(airline);
+        uint votes = flightsuretydata.getAirlineVotes(airline) + 1;
         uint256 paidAirlineCount = flightsuretydata.getPaidAirlineCount();
         if (paidAirlineCount <= 4){
             registered = true;
@@ -183,15 +183,16 @@ contract FlightSuretyApp {
         emit OracleRequest(index, airline, flight, timestamp);
     }
 
-    function airlinePay
-                        (
-                            address airline
-                        )
-    function()
-        external
-        payable
+    function airlinePay()
+                        external
+                        payable
+                        requireIsOperational
     {
-
+        if (msg.value >= 10 ether){
+            if (flightsuretydata.isRegisteredAirline(msg.sender)){
+                flightsuretydata.airlinePaid(msg.sender);
+            }
+        }
     }
 
 
@@ -375,4 +376,5 @@ contract FlightSuretyData {
     function getAirlineVotes(address airline) external view returns(uint);
     function getRegisteredAirlineCount() external  view returns(uint256);
     function getPaidAirlineCount() external  view returns(uint256);
+    function airlinePaid(address airline) external;
 }
