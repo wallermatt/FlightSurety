@@ -26,6 +26,14 @@ contract FlightSuretyData {
 
     address[] registeredAirlineList;
 
+    struct Flight {
+        bool isRegistered;
+        uint8 statusCode;
+        uint256 updatedTimestamp;        
+        address airline;
+    }
+    mapping(bytes32 => Flight) private flights;
+
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -93,6 +101,7 @@ contract FlightSuretyData {
         _;
     }
 
+    
 
 
     /********************************************************************************************/
@@ -286,6 +295,19 @@ contract FlightSuretyData {
             }
         }
         return count;
+    }
+
+    function registerFlight 
+                            (
+                                address airline,
+                                uint8 statusCode,
+                                uint256 timeStamp
+                            )
+                            external
+                            requireIsOperational
+                            requireRegisteredAppContract
+    {
+        
     }
 
 
