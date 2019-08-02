@@ -27,12 +27,15 @@ contract FlightSuretyData {
     address[] registeredAirlineList;
 
     struct Flight {
-        bool isRegistered;
+        bool registered;
         uint8 statusCode;
         uint256 updatedTimestamp;        
         address airline;
+        string flight;
     }
     mapping(bytes32 => Flight) private flights;
+
+    bytes32[] flightList;
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -41,6 +44,7 @@ contract FlightSuretyData {
     event deRegisteredAppContract(address appContract);
     event airlineRegistered(address airline);
     event airlinePaidEvent(address airline);
+    event flightRegistered(bytes32 flightKey, address airline, string flight, uint256 timestamp, uint8 statusCode);
 
     event debugDataEvent(string info);
     event debugDataInt(uint256 number);
@@ -276,8 +280,6 @@ contract FlightSuretyData {
                                             requireRegisteredAppContract
                                             returns(uint256)
     {
-        emit debugDataEvent('data_count');
-        emit debugDataInt(registeredAirlineList.length);
         return registeredAirlineList.length;
     }
     
@@ -299,17 +301,38 @@ contract FlightSuretyData {
 
     function registerFlight 
                             (
+                                bytes32 flightKey,
                                 address airline,
-                                uint8 statusCode,
-                                uint256 timeStamp
+                                string flight,
+                                uint256 timestamp,
+                                uint8 statusCode
                             )
                             external
                             requireIsOperational
                             requireRegisteredAppContract
     {
-        
+        emit debugDataEvent('registerFlight');
+        require(flights[flightKey].registered == false, 'Flight already registered');
+        flights[flightKey].registered = true;
+        flights[flightKey].airline = airline;
+        flights[flightKey].flight = flight;
+        flights[flightKey].updatedTimestamp = timestamp;
+        flights[flightKey].statusCode = statusCode;
+        flightList.push(flightKey);
+        emit flightRegistered(flightKey, airline, flight, timestamp, statusCode);
     }
 
+    function isFlightRegistered
+                        (
+                            bytes32 flightKey
+                        )
+                        external
+                        requireIsOperational
+                        requireRegisteredAppContract
+                        returns(bool)
+    {
+        return flights[flightKey].registered;
+    }
 
    /**
     * @dev Buy insurance for a flight

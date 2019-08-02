@@ -33,6 +33,7 @@ contract FlightSuretyApp {
     event debugEvent(string info);
     event debugInt(uint256 number);
     event debugBool(bool flag);
+    event debugBytes32(bytes32 flightKey);
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
     /********************************************************************************************/
@@ -131,11 +132,19 @@ contract FlightSuretyApp {
     */  
     function registerFlight
                                 (
+                                    string flight
                                 )
                                 external
+                                returns(bool)
     {
+        emit debugEvent('app');
         require(flightsuretydata.isPaidAirline(msg.sender), 'Sender not paid airline therefore cannot register a flight');
-
+        uint256 timestamp = now;
+        bytes32 flightKey = getFlightKey(msg.sender, flight, timestamp);
+        emit debugBytes32(flightKey);
+        flightsuretydata.registerFlight(flightKey, msg.sender, flight, timestamp, STATUS_CODE_UNKNOWN);
+        emit debugEvent('app_end');
+        return(true);
     }
     
    /**
@@ -370,5 +379,5 @@ contract FlightSuretyData {
     function getRegisteredAirlineCount() external  view returns(uint256);
     function getPaidAirlineCount() external  view returns(uint256);
     function airlinePaid(address airline) external;
-    function registerFlight() external;
+    function registerFlight(bytes32 flightKey, address airline, string flight, uint256 timestamp, uint8 flightStatus) external;
 }

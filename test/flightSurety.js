@@ -229,6 +229,18 @@ contract('Flight Surety Tests', async (accounts) => {
 
 
   });
+
+  it('Multi-party consensus - half registered and paid airlines required to register airline', async () => {
+
+    try {
+        let flightKey1 = await config.flightSuretyApp.registerFlight('Flight1', {from: config.owner});
+        console.log('FK:', flightKey1);
+    }
+    catch(e) {
+        console.log(e);
+    }
+    assert.equal(1,2, 'Flight should be registered by paid airline')
+  });
  
 
 });
