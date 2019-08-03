@@ -26,16 +26,26 @@ contract FlightSuretyData {
 
     address[] registeredAirlineList;
 
+    struct Insurance {
+        address passenger;
+        uint value;
+        bool cancelled;
+        bool processed;
+        bool paid;
+    }
+
     struct Flight {
         bool registered;
         uint8 statusCode;
         uint256 updatedTimestamp;        
         address airline;
-        string flight;
+        Insurance[] insuranceList;
     }
-    mapping(bytes32 => Flight) private flights;
+    mapping(string => Flight) private flights;
 
-    bytes32[] flightList;
+    string[] flightList;
+
+
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -44,7 +54,8 @@ contract FlightSuretyData {
     event deRegisteredAppContract(address appContract);
     event airlineRegistered(address airline);
     event airlinePaidEvent(address airline);
-    event flightRegistered(bytes32 flightKey, address airline, string flight, uint256 timestamp, uint8 statusCode);
+    event flightRegistered(string flightCodeDate, address airline, uint256 timestamp, uint8 statusCode);
+    event insurancePurchased(string flightCodeDate, address pasenger, uint value);
 
     event debugDataEvent(string info);
     event debugDataInt(uint256 number);
@@ -301,9 +312,8 @@ contract FlightSuretyData {
 
     function registerFlight 
                             (
-                                bytes32 flightKey,
+                                string flightCodeDate,
                                 address airline,
-                                string flight,
                                 uint256 timestamp,
                                 uint8 statusCode
                             )
@@ -311,27 +321,38 @@ contract FlightSuretyData {
                             requireIsOperational
                             requireRegisteredAppContract
     {
-        emit debugDataEvent('registerFlight');
-        require(flights[flightKey].registered == false, 'Flight already registered');
-        flights[flightKey].registered = true;
-        flights[flightKey].airline = airline;
-        flights[flightKey].flight = flight;
-        flights[flightKey].updatedTimestamp = timestamp;
-        flights[flightKey].statusCode = statusCode;
-        flightList.push(flightKey);
-        emit flightRegistered(flightKey, airline, flight, timestamp, statusCode);
+        require(flights[flightCodeDate].registered == false, 'Flight already registered');
+        flights[flightCodeDate].registered = true;
+        flights[flightCodeDate].airline = airline;
+        flights[flightCodeDate].updatedTimestamp = timestamp;
+        flights[flightCodeDate].statusCode = statusCode;
+        flightList.push(flightCodeDate);
     }
 
     function isFlightRegistered
                         (
-                            bytes32 flightKey
+                            string flightCodeDate
                         )
                         external
                         requireIsOperational
                         requireRegisteredAppContract
                         returns(bool)
     {
-        return flights[flightKey].registered;
+        return flights[flightCodeDate].registered;
+    }
+
+    function buyInsurance
+                        (
+                            address purchaser,
+                            string flightCodeDate,
+                            uint purchasedValue
+                        )
+                        external
+                        requireIsOperational
+                        requireRegisteredAppContract
+    {
+        flights[flightCodeDate].insuranceList.push(Insurance({passenger: purchaser, value: purchasedValue, cancelled: false, processed: false, paid: false}));
+        emit insurancePurchased(flightCodeDate, purchaser, purchasedValue);
     }
 
    /**

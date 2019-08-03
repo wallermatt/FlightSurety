@@ -86,10 +86,9 @@ contract FlightSuretyApp {
 
     function isOperational() 
                             public 
-                            pure 
                             returns(bool) 
     {
-        return true;  // Modify to call data contract's status
+        return flightsuretydata.isOperational();
     }
 
     /********************************************************************************************/
@@ -108,6 +107,7 @@ contract FlightSuretyApp {
                                 string name 
                             )
                             external
+                            requireIsOperational
                             returns(bool success, uint newVotes)
     {
         require(flightsuretydata.isPaidAirline(msg.sender), 'Sender not paid airline therefore cannot register another airline');
@@ -132,19 +132,30 @@ contract FlightSuretyApp {
     */  
     function registerFlight
                                 (
-                                    string flight
+                                    string flightCodeDate
                                 )
                                 external
-                                returns(bool)
+                                requireIsOperational
+
     {
-        emit debugEvent('app');
         require(flightsuretydata.isPaidAirline(msg.sender), 'Sender not paid airline therefore cannot register a flight');
         uint256 timestamp = now;
-        bytes32 flightKey = getFlightKey(msg.sender, flight, timestamp);
-        emit debugBytes32(flightKey);
-        flightsuretydata.registerFlight(flightKey, msg.sender, flight, timestamp, STATUS_CODE_UNKNOWN);
-        emit debugEvent('app_end');
-        return(true);
+        flightsuretydata.registerFlight(flightCodeDate, msg.sender, timestamp, STATUS_CODE_UNKNOWN);
+    }
+
+    function buyInsurance
+                        (
+                            string flightCodeDate
+                        )
+                        external
+                        payable
+                        requireIsOperational
+    {
+        emit debugEvent('BUY');
+        emit debugInt(msg.value);
+        require(msg.value <= 1 ether, 'Maximum insurance value is 1 ether');
+        require(flightsuretydata.isFlightRegistered(flightCodeDate));
+        flightsuretydata.buyInsurance(msg.sender, flightCodeDate, msg.value);
     }
     
    /**
@@ -372,6 +383,7 @@ contract FlightSuretyApp {
 }
 
 contract FlightSuretyData {
+    function isOperational() external view returns(bool);
     function registerAirline(address airline, string code, string name, bool registered) external;
     function isRegisteredAirline(address airline) external view returns(bool);
     function isPaidAirline(address airline) external view returns(bool);
@@ -379,5 +391,7 @@ contract FlightSuretyData {
     function getRegisteredAirlineCount() external  view returns(uint256);
     function getPaidAirlineCount() external  view returns(uint256);
     function airlinePaid(address airline) external;
-    function registerFlight(bytes32 flightKey, address airline, string flight, uint256 timestamp, uint8 flightStatus) external;
+    function registerFlight(string flightCodeDate, address airline, uint256 timestamp, uint8 flightStatus) external;
+    function isFlightRegistered(string flightCodeDate) external view returns(bool);
+    function buyInsurance(address purchaser, string flightCodeDate, uint purchasedValue) external;
 }

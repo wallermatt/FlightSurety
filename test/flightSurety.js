@@ -230,17 +230,31 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
-  it('Multi-party consensus - half registered and paid airlines required to register airline', async () => {
+  it('Paid airlines can register flights', async () => {
 
     try {
-        let flightKey1 = await config.flightSuretyApp.registerFlight('Flight1', {from: config.owner});
-        console.log('FK:', flightKey1);
+        await config.flightSuretyApp.registerFlight('UAL925-20190801', {from: config.owner});
     }
     catch(e) {
         console.log(e);
     }
-    assert.equal(1,2, 'Flight should be registered by paid airline')
+    let registeredFlight = await config.flightSuretyData.isFlightRegistered.call('UAL925-20190801', {from: config.flightSuretyApp.address});
+    assert.equal(registeredFlight,true, 'Flight should be registered by paid airline')
   });
+
+  it('Purchaser can buy insurance', async () => {
+
+    let purchaser = accounts[7];
+
+    try {
+        await config.flightSuretyApp.buyInsurance('UAL925-20190801', {from: purchaser, value: web3.utils.toWei('1', 'ether')});
+    }
+    catch(e) {
+        console.log(e);
+    }
+  });
+
+  assert.equal(1,2,'No insurance bought');
  
 
 });
