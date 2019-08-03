@@ -56,6 +56,7 @@ contract FlightSuretyData {
     event airlinePaidEvent(address airline);
     event flightRegistered(string flightCodeDate, address airline, uint256 timestamp, uint8 statusCode);
     event insurancePurchased(string flightCodeDate, address pasenger, uint value);
+    event insuranceCancelled(string flightCodeDate, address pasenger);
 
     event debugDataEvent(string info);
     event debugDataInt(uint256 number);
@@ -357,7 +358,7 @@ contract FlightSuretyData {
 
     function getInsurance
                         (
-                            string flightCodeData,
+                            string flightCodeDate,
                             address passenger
                         )
                         external
@@ -365,8 +366,8 @@ contract FlightSuretyData {
                         requireRegisteredAppContract
                         returns(uint, bool, bool, bool)
     {
-        for (uint i=0; i<flights[flightCodeData].insuranceList.length; i++) {
-            Insurance currentInsurance = flights[flightCodeData].insuranceList[i];
+        for (uint i=0; i<flights[flightCodeDate].insuranceList.length; i++) {
+            Insurance currentInsurance = flights[flightCodeDate].insuranceList[i];
             if(currentInsurance.passenger == passenger){
                return(
                    currentInsurance.value,
@@ -378,17 +379,26 @@ contract FlightSuretyData {
         return (0, false, false, false);
         }
     }
-   /**
-    * @dev Buy insurance for a flight
-    *
-    */   
-    function buy
-                            (                             
+   
+   function cancelInsurance
+                            (
+                                string flightCodeDate,
+                                address passenger 
                             )
                             external
-                            payable
+                            requireIsOperational
+                            requireRegisteredAppContract
+                            returns(bool)
     {
-
+        for (uint i=0; i<flights[flightCodeDate].insuranceList.length; i++) {
+            Insurance currentInsurance = flights[flightCodeDate].insuranceList[i];
+            if(currentInsurance.passenger == passenger){
+                currentInsurance.cancelled = true;
+                emit insuranceCancelled(flightCodeDate, passenger);
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -258,7 +258,26 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
-  
+  it('Purchaser can cancel insurance and be refunded', async () => {
+    let purchaser = accounts[7];
+
+    let initialBalance = new BigNumber(await web3.eth.getBalance(purchaser));
+    console.log('Initial Balance:', web3.utils.fromWei(initialBalance.toString(), 'ether'));
+   
+
+    try {
+        await config.flightSuretyApp.cancelInsurance('UAL925-20190801', {from: purchaser});
+    }
+    catch(e) {
+        console.log(e);
+    }
+    let insuranceDetails = await config.flightSuretyApp.getInsurance.call('UAL925-20190801', purchaser, {from: config.flightSuretyApp.address});
+    assert.equal(insuranceDetails[1], true,'Insurance not cancelled');
+
+    let newBalance = new BigNumber(await web3.eth.getBalance(purchaser));
+    console.log('Initial Balance:', web3.utils.fromWei(newBalance.toString(), 'ether'));
+
+  });
  
 
 });

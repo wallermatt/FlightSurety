@@ -151,8 +151,6 @@ contract FlightSuretyApp {
                         payable
                         requireIsOperational
     {
-        emit debugEvent('BUY');
-        emit debugInt(msg.value);
         require(msg.value <= 1 ether, 'Maximum insurance value is 1 ether');
         require(flightsuretydata.isFlightRegistered(flightCodeDate));
         flightsuretydata.buyInsurance(msg.sender, flightCodeDate, msg.value);
@@ -171,6 +169,27 @@ contract FlightSuretyApp {
     {
         require(flightsuretydata.isFlightRegistered(flightCodeDate));
         return flightsuretydata.getInsurance(flightCodeDate, passenger); 
+    }
+
+
+    function cancelInsurance
+                            (
+                                string flightCodeDate
+                            )
+                            external
+                            requireIsOperational
+    {
+        require(flightsuretydata.isFlightRegistered(flightCodeDate));
+        (uint value, bool cancelled, bool processed, bool paid) = flightsuretydata.getInsurance(flightCodeDate, msg.sender);
+        require(value > 0, 'No insurance found');
+        require(cancelled == false, 'Insurance has been cancelled');
+        require(paid == false, 'Insurance has already paid out');
+        require(processed == false, 'Insurance has already been processed');
+        bool cancelSuccess = flightsuretydata.cancelInsurance(flightCodeDate, msg.sender);
+        if (cancelSuccess){
+            //address payable passenger = address(uint160(_insurance.buyer));
+            msg.sender.transfer(value);
+        }
     }
    /**
     * @dev Called after oracle has updated flight status
@@ -409,4 +428,5 @@ contract FlightSuretyData {
     function isFlightRegistered(string flightCodeDate) external view returns(bool);
     function buyInsurance(address purchaser, string flightCodeDate, uint purchasedValue) external;
     function getInsurance(string flightCodeDate, address passenger) external view returns(uint, bool, bool, bool);
+    function cancelInsurance(string flightCodeDate, address passenger) external returns(bool);
 }
