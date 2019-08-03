@@ -157,7 +157,21 @@ contract FlightSuretyApp {
         require(flightsuretydata.isFlightRegistered(flightCodeDate));
         flightsuretydata.buyInsurance(msg.sender, flightCodeDate, msg.value);
     }
-    
+
+
+    function getInsurance
+                        (
+                            string flightCodeDate,
+                            address passenger
+                        )
+                        external
+                        view
+                        requireIsOperational
+                        returns(uint, bool, bool, bool)
+    {
+        require(flightsuretydata.isFlightRegistered(flightCodeDate));
+        return flightsuretydata.getInsurance(flightCodeDate, passenger); 
+    }
    /**
     * @dev Called after oracle has updated flight status
     *
@@ -394,4 +408,5 @@ contract FlightSuretyData {
     function registerFlight(string flightCodeDate, address airline, uint256 timestamp, uint8 flightStatus) external;
     function isFlightRegistered(string flightCodeDate) external view returns(bool);
     function buyInsurance(address purchaser, string flightCodeDate, uint purchasedValue) external;
+    function getInsurance(string flightCodeDate, address passenger) external view returns(uint, bool, bool, bool);
 }

@@ -355,6 +355,29 @@ contract FlightSuretyData {
         emit insurancePurchased(flightCodeDate, purchaser, purchasedValue);
     }
 
+    function getInsurance
+                        (
+                            string flightCodeData,
+                            address passenger
+                        )
+                        external
+                        requireIsOperational
+                        requireRegisteredAppContract
+                        returns(uint, bool, bool, bool)
+    {
+        for (uint i=0; i<flights[flightCodeData].insuranceList.length; i++) {
+            Insurance currentInsurance = flights[flightCodeData].insuranceList[i];
+            if(currentInsurance.passenger == passenger){
+               return(
+                   currentInsurance.value,
+                   currentInsurance.cancelled,
+                   currentInsurance.processed,
+                   currentInsurance.paid
+                );
+            }
+        return (0, false, false, false);
+        }
+    }
    /**
     * @dev Buy insurance for a flight
     *

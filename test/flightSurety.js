@@ -252,9 +252,13 @@ contract('Flight Surety Tests', async (accounts) => {
     catch(e) {
         console.log(e);
     }
+
+    let insuranceDetails = await config.flightSuretyApp.getInsurance.call('UAL925-20190801', purchaser, {from: config.flightSuretyApp.address});
+    assert.equal(web3.utils.fromWei(insuranceDetails[0], 'ether'), 1,'No insurance bought');
+
   });
 
-  assert.equal(1,2,'No insurance bought');
+  
  
 
 });
