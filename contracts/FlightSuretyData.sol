@@ -28,9 +28,9 @@ contract FlightSuretyData {
 
     struct Insurance {
         address passenger;
-        uint value;
+        uint8 value;
         bool cancelled;
-        bool processed;
+        bool payout;
         bool paid;
     }
 
@@ -57,6 +57,9 @@ contract FlightSuretyData {
     event flightRegistered(string flightCodeDate, address airline, uint256 timestamp, uint8 statusCode);
     event insurancePurchased(string flightCodeDate, address pasenger, uint value);
     event insuranceCancelled(string flightCodeDate, address pasenger);
+    event flightStatusCodeChanged(string flightCodedate, uint statusCode);
+    event insurancePayout(string flightCodeDate, address pasenger);
+    event insurancePaidOut(string flightCodeDate, address pasenger, uint value);
 
     event debugDataEvent(string info);
     event debugDataInt(uint256 number);
@@ -342,17 +345,45 @@ contract FlightSuretyData {
         return flights[flightCodeDate].registered;
     }
 
+    function getFlightStatusCode
+                            (
+                                string flightCodeDate
+                            )
+                            external
+                            requireIsOperational
+                            requireRegisteredAppContract
+                            returns(uint)
+    {
+        require(flights[flightCodeDate].registered, 'Flight not registered');
+        return flights[flightCodeDate].statusCode;
+    }
+
+    function changeFlightStatusCode
+                                (
+                                    string flightCodeDate,
+                                    uint8 statusCode
+                                )
+                                external
+                                requireIsOperational
+                                requireRegisteredAppContract
+    {
+        require(flights[flightCodeDate].registered, 'Flight not registered');
+        flights[flightCodeDate].statusCode = statusCode;
+        emit flightStatusCodeChanged(flightCodeDate, statusCode);
+    }
+
+
     function buyInsurance
                         (
                             address purchaser,
                             string flightCodeDate,
-                            uint purchasedValue
+                            uint8 purchasedValue
                         )
                         external
                         requireIsOperational
                         requireRegisteredAppContract
     {
-        flights[flightCodeDate].insuranceList.push(Insurance({passenger: purchaser, value: purchasedValue, cancelled: false, processed: false, paid: false}));
+        flights[flightCodeDate].insuranceList.push(Insurance({passenger: purchaser, value: purchasedValue, cancelled: false, payout: false, paid: false}));
         emit insurancePurchased(flightCodeDate, purchaser, purchasedValue);
     }
 
@@ -372,7 +403,7 @@ contract FlightSuretyData {
                return(
                    currentInsurance.value,
                    currentInsurance.cancelled,
-                   currentInsurance.processed,
+                   currentInsurance.payout,
                    currentInsurance.paid
                 );
             }
@@ -395,6 +426,45 @@ contract FlightSuretyData {
             if(currentInsurance.passenger == passenger){
                 currentInsurance.cancelled = true;
                 emit insuranceCancelled(flightCodeDate, passenger);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function setInsurancePayout
+                                (
+                                    string flightCodeDate
+                                )
+                                external
+                                requireIsOperational
+                                requireRegisteredAppContract
+    {
+        require(flights[flightCodeDate].registered, 'Flight not registered');
+        for (uint i=0; i<flights[flightCodeDate].insuranceList.length; i++) {
+            Insurance currentInsurance = flights[flightCodeDate].insuranceList[i];
+            if(currentInsurance.cancelled == false && currentInsurance.paid == false){
+                currentInsurance.payout = true;
+                emit insurancePayout(flightCodeDate, currentInsurance.passenger);
+            }
+        }
+    }
+
+    function setInsurancePaid
+                            (
+                                string flightCodeDate,
+                                address passenger 
+                            )
+                            external
+                            requireIsOperational
+                            requireRegisteredAppContract
+                            returns(bool)
+    {
+        for (uint i=0; i<flights[flightCodeDate].insuranceList.length; i++) {
+            Insurance currentInsurance = flights[flightCodeDate].insuranceList[i];
+            if(currentInsurance.passenger == passenger && currentInsurance.payout && currentInsurance.paid == false){
+                currentInsurance.paid = true;
+                emit insurancePaidOut(flightCodeDate, passenger, currentInsurance.value);
                 return true;
             }
         }

@@ -275,7 +275,7 @@ contract('Flight Surety Tests', async (accounts) => {
     assert.equal(insuranceDetails[1], true,'Insurance not cancelled');
 
     let newBalance = new BigNumber(await web3.eth.getBalance(purchaser));
-    console.log('Initial Balance:', web3.utils.fromWei(newBalance.toString(), 'ether'));
+    console.log('New Balance:', web3.utils.fromWei(newBalance.toString(), 'ether'));
 
   });
  
