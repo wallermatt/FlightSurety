@@ -278,6 +278,36 @@ contract('Flight Surety Tests', async (accounts) => {
     console.log('New Balance:', web3.utils.fromWei(newBalance.toString(), 'ether'));
 
   });
+
+  it('Change flight status and payout on insurance', async () => {
+    
+    let purchaser2 = accounts[3];
+
+    try {
+        await config.flightSuretyApp.registerFlight('UAL925-20190802', {from: config.owner});
+    }
+    catch(e) {
+        console.log(e);
+    }
+
+    try {
+        await config.flightSuretyApp.buyInsurance('UAL925-20190802', {from: purchaser2, value: web3.utils.toWei('1', 'ether')});
+    }
+    catch(e) {
+        console.log(e);
+    }
+
+    try {
+        await config.flightSuretyData.changeFlightStatusCode('UAL925-20190802', 10, {from: config.flightSuretyApp.address});
+    }
+    catch(e) {
+        console.log('CHANGE_STATUS:', e);
+    }
+
+    let statusCode = await config.flightSuretyData.getFlightStatusCode.call('UAL925-20190802', {from: config.flightSuretyApp.address});
+    assert.equal(statusCode, 10, 'Flight Status Code not changed');
+
+  });
  
 
 });

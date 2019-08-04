@@ -28,7 +28,7 @@ contract FlightSuretyData {
 
     struct Insurance {
         address passenger;
-        uint8 value;
+        uint256 value;
         bool cancelled;
         bool payout;
         bool paid;
@@ -55,11 +55,11 @@ contract FlightSuretyData {
     event airlineRegistered(address airline);
     event airlinePaidEvent(address airline);
     event flightRegistered(string flightCodeDate, address airline, uint256 timestamp, uint8 statusCode);
-    event insurancePurchased(string flightCodeDate, address pasenger, uint value);
-    event insuranceCancelled(string flightCodeDate, address pasenger);
+    event insurancePurchased(string flightCodeDate, address passenger, uint value);
+    event insuranceCancelled(string flightCodeDate, address passenger);
     event flightStatusCodeChanged(string flightCodedate, uint statusCode);
-    event insurancePayout(string flightCodeDate, address pasenger);
-    event insurancePaidOut(string flightCodeDate, address pasenger, uint value);
+    event insurancePayout(string flightCodeDate, address passenger);
+    event insurancePaidOut(string flightCodeDate, address passenger, uint value);
 
     event debugDataEvent(string info);
     event debugDataInt(uint256 number);
@@ -367,6 +367,7 @@ contract FlightSuretyData {
                                 requireIsOperational
                                 requireRegisteredAppContract
     {
+        emit debugDataEvent('START CHANGE');
         require(flights[flightCodeDate].registered, 'Flight not registered');
         flights[flightCodeDate].statusCode = statusCode;
         emit flightStatusCodeChanged(flightCodeDate, statusCode);
@@ -377,7 +378,7 @@ contract FlightSuretyData {
                         (
                             address purchaser,
                             string flightCodeDate,
-                            uint8 purchasedValue
+                            uint256 purchasedValue
                         )
                         external
                         requireIsOperational
