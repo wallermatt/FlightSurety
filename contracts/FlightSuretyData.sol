@@ -57,7 +57,7 @@ contract FlightSuretyData {
     event flightRegistered(string flightCodeDate, address airline, uint256 timestamp, uint8 statusCode);
     event insurancePurchased(string flightCodeDate, address passenger, uint value);
     event insuranceCancelled(string flightCodeDate, address passenger);
-    event flightStatusCodeChanged(string flightCodedate, uint statusCode);
+    event flightStatusCodeChanged(string flightCodedate, uint8 statusCode);
     event insurancePayout(string flightCodeDate, address passenger);
     event insurancePaidOut(string flightCodeDate, address passenger, uint value);
 
@@ -331,6 +331,7 @@ contract FlightSuretyData {
         flights[flightCodeDate].updatedTimestamp = timestamp;
         flights[flightCodeDate].statusCode = statusCode;
         flightList.push(flightCodeDate);
+        emit flightRegistered(flightCodeDate, airline, timestamp, statusCode);
     }
 
     function isFlightRegistered
@@ -352,7 +353,7 @@ contract FlightSuretyData {
                             external
                             requireIsOperational
                             requireRegisteredAppContract
-                            returns(uint)
+                            returns(uint8)
     {
         require(flights[flightCodeDate].registered, 'Flight not registered');
         return flights[flightCodeDate].statusCode;
@@ -366,11 +367,12 @@ contract FlightSuretyData {
                                 external
                                 requireIsOperational
                                 requireRegisteredAppContract
+                                returns(bool)
     {
-        emit debugDataEvent('START CHANGE');
         require(flights[flightCodeDate].registered, 'Flight not registered');
-        flights[flightCodeDate].statusCode = statusCode;
+        flights[flightCodeDate].statusCode = 10;
         emit flightStatusCodeChanged(flightCodeDate, statusCode);
+        return true;
     }
 
 

@@ -240,6 +240,7 @@ contract('Flight Surety Tests', async (accounts) => {
     }
     let registeredFlight = await config.flightSuretyData.isFlightRegistered.call('UAL925-20190801', {from: config.flightSuretyApp.address});
     assert.equal(registeredFlight,true, 'Flight should be registered by paid airline')
+
   });
 
   it('Purchaser can buy insurance', async () => {
@@ -298,7 +299,7 @@ contract('Flight Surety Tests', async (accounts) => {
     }
 
     try {
-        await config.flightSuretyData.changeFlightStatusCode('UAL925-20190802', 10, {from: config.flightSuretyApp.address});
+        await config.flightSuretyApp.changeFlightStatusCode('UAL925-20190802', 10, {from: config.owner});
     }
     catch(e) {
         console.log('CHANGE_STATUS:', e);
@@ -306,6 +307,19 @@ contract('Flight Surety Tests', async (accounts) => {
 
     let statusCode = await config.flightSuretyData.getFlightStatusCode.call('UAL925-20190802', {from: config.flightSuretyApp.address});
     assert.equal(statusCode, 10, 'Flight Status Code not changed');
+
+    await config.flightSuretyApp.setInsurancePayout('UAL925-20190802');
+
+    let initialBalance = new BigNumber(await web3.eth.getBalance(purchaser2));
+    console.log('Initial Balance:', web3.utils.fromWei(initialBalance.toString(), 'ether'));
+
+    await config.flightSuretyApp.payoutInsurance('UAL925-20190802', {from: purchaser2});
+
+    let newBalance = new BigNumber(await web3.eth.getBalance(purchaser2));
+    console.log('New Balance:', web3.utils.fromWei(newBalance.toString(), 'ether'));
+
+    let insuranceDetails = await config.flightSuretyApp.getInsurance.call('UAL925-20190802', purchaser2, {from: config.flightSuretyApp.address});
+    assert.equal(insuranceDetails[3], true,'Insurance not paid');
 
   });
  

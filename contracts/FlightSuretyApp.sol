@@ -208,7 +208,7 @@ contract FlightSuretyApp {
                             requireIsOperational
     {
         require(flightsuretydata.isFlightRegistered(flightCodeDate), 'Flight not registered');
-        require(flightsuretydata.getFlightStatusCode(flightCodeDate) == STATUS_CODE_UNKNOWN, 'Cannot cancel insurance for flight that has completed');
+        require(flightsuretydata.getFlightStatusCode(flightCodeDate) != STATUS_CODE_UNKNOWN, 'Cannot claim payout for unknown flight status');
         (uint256 value, bool cancelled, bool payout, bool paid) = flightsuretydata.getInsurance(flightCodeDate, msg.sender);
         require(value > 0, 'No insurance found');
         require(cancelled == false, 'Insurance has been cancelled');
@@ -221,6 +221,30 @@ contract FlightSuretyApp {
         }
     }
 
+    function changeFlightStatusCode
+                                    (
+                                        string flightCodeDate,
+                                        uint8 statusCode
+                                    )
+                                    external
+                                    requireIsOperational
+    {
+        require(flightsuretydata.isFlightRegistered(flightCodeDate), 'Flight not registered');
+        require(flightsuretydata.getFlightStatusCode(flightCodeDate) == STATUS_CODE_UNKNOWN, 'Flight status already changed');
+        bool result_ = flightsuretydata.changeFlightStatusCode(flightCodeDate, statusCode);
+    }
+
+
+    function setInsurancePayout
+                                (
+                                    string flightCodeDate
+                                )
+                                external
+                                requireIsOperational
+    
+    {
+        flightsuretydata.setInsurancePayout(flightCodeDate);
+    }
    /**
     * @dev Called after oracle has updated flight status
     *
@@ -461,5 +485,6 @@ contract FlightSuretyData {
     function cancelInsurance(string flightCodeDate, address passenger) external returns(bool);
     function getFlightStatusCode(string flightCodeDate) external view returns(uint8);
     function setInsurancePaid(string flightCodeDate, address passenger) external returns(bool);
-    function changeFlightStatusCode(string flightCodeDate, uint8 statusCode) external;
+    function changeFlightStatusCode(string flightCodeDate, uint8 statusCode) external returns(bool);
+    function setInsurancePayout(string flightCodeDate) external;
 }
