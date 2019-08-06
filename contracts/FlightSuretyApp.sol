@@ -226,12 +226,17 @@ contract FlightSuretyApp {
                                         string flightCodeDate,
                                         uint8 statusCode
                                     )
-                                    external
+                                    internal  // for testing purposes - change later
                                     requireIsOperational
     {
         require(flightsuretydata.isFlightRegistered(flightCodeDate), 'Flight not registered');
         require(flightsuretydata.getFlightStatusCode(flightCodeDate) == STATUS_CODE_UNKNOWN, 'Flight status already changed');
-        bool result_ = flightsuretydata.changeFlightStatusCode(flightCodeDate, statusCode);
+        bool result = flightsuretydata.changeFlightStatusCode(flightCodeDate, statusCode);
+        if (result) {
+            if (statusCode >= STATUS_CODE_LATE_AIRLINE) {
+                setInsurancePayout(flightCodeDate);
+            }
+        }
     }
 
 
@@ -239,7 +244,7 @@ contract FlightSuretyApp {
                                 (
                                     string flightCodeDate
                                 )
-                                external
+                                internal
                                 requireIsOperational
     
     {
@@ -265,22 +270,18 @@ contract FlightSuretyApp {
     // Generate a request for oracles to fetch flight information
     function fetchFlightStatus
                         (
-                            address airline,
-                            string flight,
-                            uint256 timestamp                            
+                            string flightCodeDate                            
                         )
                         external
     {
         uint8 index = getRandomIndex(msg.sender);
 
-        // Generate a unique key for storing the request
-        bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
-        oracleResponses[key] = ResponseInfo({
+        oracleResponses[flightCodeDate] = ResponseInfo({
                                                 requester: msg.sender,
                                                 isOpen: true
                                             });
 
-        emit OracleRequest(index, airline, flight, timestamp);
+        emit OracleRequest(index, flightCodeDate);
     }
 
     function airlinePay()
@@ -326,18 +327,18 @@ contract FlightSuretyApp {
     }
 
     // Track all oracle responses
-    // Key = hash(index, flight, timestamp)
-    mapping(bytes32 => ResponseInfo) private oracleResponses;
+    // Key = string flightCodeDate
+    mapping(string => ResponseInfo) private oracleResponses;
 
     // Event fired each time an oracle submits a response
-    event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
+    event FlightStatusInfo(string flightCodeDate, uint8 status);
 
-    event OracleReport(address airline, string flight, uint256 timestamp, uint8 status);
+    event OracleReport(string flightCodeDate, uint8 status);
 
     // Event fired when flight status request is submitted
     // Oracles track this and if they have a matching index
     // they fetch data and submit a response
-    event OracleRequest(uint8 index, address airline, string flight, uint256 timestamp);
+    event OracleRequest(uint8 index, string flightCodeDate);
 
 
     // Register an oracle with the contract
@@ -380,30 +381,26 @@ contract FlightSuretyApp {
     function submitOracleResponse
                         (
                             uint8 index,
-                            address airline,
-                            string flight,
-                            uint256 timestamp,
+                            string flightCodeDate,
                             uint8 statusCode
                         )
                         external
     {
         require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
 
+        require(oracleResponses[flightCodeDate].isOpen, "Flight or timestamp do not match oracle request");
 
-        bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp)); 
-        require(oracleResponses[key].isOpen, "Flight or timestamp do not match oracle request");
-
-        oracleResponses[key].responses[statusCode].push(msg.sender);
+        oracleResponses[flightCodeDate].responses[statusCode].push(msg.sender);
 
         // Information isn't considered verified until at least MIN_RESPONSES
         // oracles respond with the *** same *** information
-        emit OracleReport(airline, flight, timestamp, statusCode);
-        if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
+        emit OracleReport(flightCodeDate, statusCode);
+        if (oracleResponses[flightCodeDate].responses[statusCode].length >= MIN_RESPONSES) {
 
-            emit FlightStatusInfo(airline, flight, timestamp, statusCode);
+            emit FlightStatusInfo(flightCodeDate, statusCode);
 
             // Handle flight status as appropriate
-            processFlightStatus(airline, flight, timestamp, statusCode);
+            changeFlightStatusCode(flightCodeDate, statusCode);
         }
     }
 

@@ -299,7 +299,7 @@ contract('Flight Surety Tests', async (accounts) => {
     }
 
     try {
-        await config.flightSuretyApp.changeFlightStatusCode('UAL925-20190802', 10, {from: config.owner});
+        await config.flightSuretyApp.changeFlightStatusCode('UAL925-20190802', 20, {from: config.owner});
     }
     catch(e) {
         console.log('CHANGE_STATUS:', e);
@@ -308,7 +308,7 @@ contract('Flight Surety Tests', async (accounts) => {
     let statusCode = await config.flightSuretyData.getFlightStatusCode.call('UAL925-20190802', {from: config.flightSuretyApp.address});
     assert.equal(statusCode, 10, 'Flight Status Code not changed');
 
-    await config.flightSuretyApp.setInsurancePayout('UAL925-20190802');
+    // await config.flightSuretyApp.setInsurancePayout('UAL925-20190802');
 
     let initialBalance = new BigNumber(await web3.eth.getBalance(purchaser2));
     console.log('Initial Balance:', web3.utils.fromWei(initialBalance.toString(), 'ether'));
