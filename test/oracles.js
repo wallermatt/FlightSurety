@@ -5,10 +5,21 @@ var Test = require('../config/testConfig.js');
 contract('Oracles', async (accounts) => {
 
   const TEST_ORACLES_COUNT = 11;
+
+  // Watch contract events
+  const STATUS_CODE_UNKNOWN = 0;
+  const STATUS_CODE_ON_TIME = 10;
+  const STATUS_CODE_LATE_AIRLINE = 20;
+  const STATUS_CODE_LATE_WEATHER = 30;
+  const STATUS_CODE_LATE_TECHNICAL = 40;
+  const STATUS_CODE_LATE_OTHER = 50;
+
+
   var config;
   before('setup contract', async () => {
     config = await Test.Config(accounts);
-
+    await config.flightSuretyData.registerAppContract(config.flightSuretyApp.address, {from: config.owner});
+   
     // Watch contract events
     const STATUS_CODE_UNKNOWN = 0;
     const STATUS_CODE_ON_TIME = 10;
@@ -39,10 +50,18 @@ contract('Oracles', async (accounts) => {
   it('can request flight status', async () => {
     
     // ARRANGE
-    let flightCodeDate = 'UAL925-20190802'; 
+    let flightCodeDate = 'UAL925-20190805'; 
+
+    try {
+      await config.flightSuretyApp.registerFlight(flightCodeDate, {from: config.owner});
+  }
+  catch(e) {
+      console.log(e);
+  }
 
     // Submit a request for oracles to get status information for a flight
-    await config.flightSuretyApp.fetchFlightStatus(flightCodeDate);
+    let statusCode = await config.flightSuretyData.getFlightStatusCode.call(flightCodeDate, {from: config.flightSuretyApp.address});
+    assert.equal(statusCode, 0, 'Status code not initial/0');
     // ACT
 
     // Since the Index assigned to each test account is opaque by design
@@ -62,11 +81,14 @@ contract('Oracles', async (accounts) => {
         }
         catch(e) {
           // Enable this when debugging
-           console.log('\nError', idx, oracleIndexes[idx].toNumber(), flightCodeDate);
+           console.log('\nError', idx, oracleIndexes[idx].toNumber(), flightCodeDate, e);
         }
 
       }
-    }
+      let statusCode = await config.flightSuretyData.getFlightStatusCode.call(flightCodeDate, {from: config.flightSuretyApp.address});
+      assert.equal(statusCode, STATUS_CODE_ON_TIME, 'Status code not ON_TIME/10');
+
+      }
 
 
   });
