@@ -230,7 +230,7 @@ contract FlightSuretyApp {
                                     requireIsOperational
     {
         require(flightsuretydata.isFlightRegistered(flightCodeDate), 'Flight not registered');
-        require(flightsuretydata.getFlightStatusCode(flightCodeDate) == STATUS_CODE_UNKNOWN, 'Flight status already changed');
+        //require(flightsuretydata.getFlightStatusCode(flightCodeDate) == STATUS_CODE_UNKNOWN, 'Flight status already changed');
         bool result = flightsuretydata.changeFlightStatusCode(flightCodeDate, statusCode);
         if (result) {
             if (statusCode >= STATUS_CODE_LATE_AIRLINE) {
@@ -273,6 +273,7 @@ contract FlightSuretyApp {
                             string flightCodeDate                            
                         )
                         external
+                        requireIsOperational
     {
         uint8 index = getRandomIndex(msg.sender);
 
@@ -297,6 +298,8 @@ contract FlightSuretyApp {
     }
 
 
+
+
 // region ORACLE MANAGEMENT
 
     // Incremented to add pseudo-randomness at various points
@@ -306,7 +309,7 @@ contract FlightSuretyApp {
     uint256 public constant REGISTRATION_FEE = 1 ether;
 
     // Number of oracles that must respond for valid status
-    uint256 private constant MIN_RESPONSES = 3;
+    uint256 private constant MIN_RESPONSES = 5;
 
 
     struct Oracle {

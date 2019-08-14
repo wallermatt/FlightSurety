@@ -370,7 +370,7 @@ contract FlightSuretyData {
                                 returns(bool)
     {
         require(flights[flightCodeDate].registered, 'Flight not registered');
-        flights[flightCodeDate].statusCode = 10;
+        flights[flightCodeDate].statusCode = statusCode;
         emit flightStatusCodeChanged(flightCodeDate, statusCode);
         return true;
     }
