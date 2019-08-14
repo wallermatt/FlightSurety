@@ -94,7 +94,6 @@ contract('Oracles', async (accounts) => {
       let statusCode2 = await config.flightSuretyData.getFlightStatusCode.call(flightCodeDate, {from: config.flightSuretyApp.address});
       console.log('New Status:', statusCode2.toNumber());
       assert.equal(statusCode2, STATUS_CODE_ON_TIME, 'Status code not ON_TIME/10');
-      console.log('New Status:', statusCode2);
 
 
   });
