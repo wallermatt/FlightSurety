@@ -239,6 +239,22 @@ contract FlightSuretyApp {
         }
     }
 
+    function ownerChangeFlightStatusCode
+                                        (
+                                            string flightCodeDate,
+                                            uint8 statusCode
+                                        )
+                                        external
+                                        requireIsOperational
+    {
+        require(msg.sender == contractOwner, 'Only contract owner can call this');
+        bool result = flightsuretydata.changeFlightStatusCode(flightCodeDate, statusCode);
+        if (result) {
+            if (statusCode >= STATUS_CODE_LATE_AIRLINE) {
+                setInsurancePayout(flightCodeDate);
+            }
+        }
+    }
 
     function setInsurancePayout
                                 (

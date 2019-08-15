@@ -299,14 +299,14 @@ contract('Flight Surety Tests', async (accounts) => {
     }
 
     try {
-        await config.flightSuretyApp.changeFlightStatusCode('UAL925-20190802', 20, {from: config.owner});
+        await config.flightSuretyApp.ownerChangeFlightStatusCode('UAL925-20190802', 20, {from: config.owner});
     }
     catch(e) {
         console.log('CHANGE_STATUS:', e);
     }
 
     let statusCode = await config.flightSuretyData.getFlightStatusCode.call('UAL925-20190802', {from: config.flightSuretyApp.address});
-    assert.equal(statusCode, 10, 'Flight Status Code not changed');
+    assert.equal(statusCode, 20, 'Flight Status Code not changed');
 
     // await config.flightSuretyApp.setInsurancePayout('UAL925-20190802');
 
