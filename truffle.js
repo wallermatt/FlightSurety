@@ -1,7 +1,7 @@
 var HDWalletProvider = require("truffle-hdwallet-provider");
 var mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 var mnemonic = 'repair laptop nasty acoustic drastic trash juice puppy brain result belt soccer';
-var mnemonic = 'ability little drum depart chief hospital ready above click enlist enable act';
+var mnemonic = 'gentle mobile mixed age wine trumpet bicycle fun minimum mansion robust doll';
 
 module.exports = {
   networks: {
@@ -12,6 +12,7 @@ module.exports = {
       network_id: '*',
       gas: 9999999,
       accounts: 20,
+      port: 7545,
     }
   },
   compilers: {
