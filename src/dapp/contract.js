@@ -29,6 +29,13 @@ export default class Contract {
                 this.passengers.push(accts[counter++]);
             }
 
+            try {
+                this.flightSuretyApp.methods.registerAirline(this.airlines[1], 'UA', 'United Airlines', {from: airlines[1]});
+            }
+            catch(e) {
+        
+            }
+
             callback();
         });
     }
