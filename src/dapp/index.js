@@ -27,11 +27,11 @@ import './flightsurety.css';
         })
 
          // User-submitted transaction
-         DOM.elid('get-flight-status-code').addEventListener('click', () => {
+         DOM.elid('get-flight-details').addEventListener('click', () => {
             let flight = DOM.elid('flight-number').value;
             // Write transaction
-            contract.getFlightStatusCode(flight, (error, result) => {
-                display('Dapp', 'Get Flight Status Code', [ { label: 'Get Flight Status Code', error: error, value: result.flight + ' ' + result.timestamp} ]);
+            contract.getFlightDetails(flight, (error, result) => {
+                display('Dapp', 'Get Flight Details', [ { label: 'Get Flight Details', error: error, value: result.flight + ' ' + result.timestamp} ]);
             });
         })
     

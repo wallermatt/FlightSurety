@@ -147,6 +147,21 @@ contract FlightSuretyApp {
         flightsuretydata.registerFlight(flightCodeDate, msg.sender, timestamp, STATUS_CODE_UNKNOWN);
     }
 
+    function getFlightDetails
+                            (
+                                string flightCodeDate
+                            )
+                            external
+                            requireIsOperational
+                            returns(bool, uint8)
+    {
+        bool isFlightRegistered = flightsuretydata.isFlightRegistered(flightCodeDate);
+        uint8 flightStatusCode = 0;
+        if (isFlightRegistered) {
+            flightStatusCode = flightsuretydata.getFlightStatusCode(flightCodeDate);
+        }
+        return (isFlightRegistered, flightStatusCode);
+    }
     
 
     function buyInsurance

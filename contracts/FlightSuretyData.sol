@@ -352,6 +352,7 @@ contract FlightSuretyData {
                             )
                             external
                             requireIsOperational
+                            requireRegisteredAppContract
                             returns(uint8)
     {
         require(flights[flightCodeDate].registered, 'Flight not registered');

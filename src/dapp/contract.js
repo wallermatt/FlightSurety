@@ -14,11 +14,14 @@ export default class Contract {
         this.owner = null;
         this.airlines = [];
         this.passengers = [];
+
     }
 
     initialize(callback) {
         this.web3.eth.getAccounts((error, accts) => {
            
+            let config = Config["localhost"];
+
             this.owner = accts[0];
 
             let counter = 1;
@@ -31,11 +34,29 @@ export default class Contract {
                 this.passengers.push(accts[counter++]);
             }
 
+            console.log('Register App contract');
             try {
-                this.flightSuretyApp.methods.registerAirline(this.airlines[1], 'UA', 'United Airlines', {from: airlines[1]});
+                this.flightSuretyData.methods.registerAppContract(config.appAddress).send({from: this.owner});
             }
             catch(e) {
-        
+                console.log(e);
+            }
+            
+
+            console.log('Register Airline');
+            try {
+                this.flightSuretyApp.methods.registerAirline(this.airlines[1], 'UA', 'United Airlines').send({from: this.owner});
+            }
+            catch(e) {
+                console.log(e);
+            }
+
+            console.log('Register Flight');
+            try {
+                this.flightSuretyApp.methods.registerFlight('UAL925-20190801').send({from: airlines[1]});
+            }
+            catch(e) {
+                console.log(e);
             }
 
             // register flight
@@ -64,6 +85,19 @@ export default class Contract {
                 callback(error, payload);
             });
     }
+
+    getFlightDetails(flight, callback) {
+        let self = this;
+        let payload = {
+            flight: flight,
+        } 
+        self.flightSuretyApp.methods
+            .getFlightDetails(payload.flight)
+            .call({ from: self.owner}, (error, result) => {
+                callback(error, payload);
+            });
+    }
+
 
     // get flight status
 }
