@@ -6,10 +6,10 @@ import Web3 from 'web3';
 export default class Contract {
     constructor(network, callback) {
 
-        let config = Config[network];
-        this.web3 = new Web3(new Web3.providers.HttpProvider(config.url));
-        this.flightSuretyApp = new this.web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
-        this.flightSuretyData = new this.web3.eth.Contract(FlightSuretyData.abi, config.dataAddress);
+        this.config = Config[network];
+        this.web3 = new Web3(new Web3.providers.HttpProvider(this.config.url));
+        this.flightSuretyApp = new this.web3.eth.Contract(FlightSuretyApp.abi, this.config.appAddress);
+        this.flightSuretyData = new this.web3.eth.Contract(FlightSuretyData.abi, this.config.dataAddress);
         this.initialize(callback);
         this.owner = null;
         this.airlines = [];
@@ -17,26 +17,16 @@ export default class Contract {
 
     }
 
-    initialize(callback) {
-        this.web3.eth.getAccounts((error, accts) => {
-           
-            let config = Config["localhost"];
+    async initialize(callback) {
+        let accounts = await this.web3.eth.getAccounts();
 
-            this.owner = accts[0];
 
-            let counter = 1;
-            
-            while(this.airlines.length < 5) {
-                this.airlines.push(accts[counter++]);
-            }
+        this.owner = accounts[0];
 
-            while(this.passengers.length < 5) {
-                this.passengers.push(accts[counter++]);
-            }
 
             console.log('Register App contract');
             try {
-                this.flightSuretyData.methods.registerAppContract(config.appAddress).send({from: this.owner});
+                await this.flightSuretyData.methods.registerAppContract(this.config.appAddress).send({from: this.owner})
             }
             catch(e) {
                 console.log(e);
@@ -45,7 +35,7 @@ export default class Contract {
 
             console.log('Register Airline');
             try {
-                this.flightSuretyApp.methods.registerAirline(this.airlines[1], 'UA', 'United Airlines').send({from: this.owner});
+                await this.flightSuretyApp.methods.registerAirline(accounts[1], 'UA', 'United Airlines').send({from: this.owner, gas: 1500000});
             }
             catch(e) {
                 console.log(e);
@@ -53,20 +43,19 @@ export default class Contract {
 
             console.log('Register Flight');
             try {
-                this.flightSuretyApp.methods.registerFlight('UAL925-20190801').send({from: airlines[1]});
+                await this.flightSuretyApp.methods.registerFlight('UAL925-20190801').send({from: this.owner, gas: 1500000});
             }
             catch(e) {
                 console.log(e);
             }
-
+            console.log('Flight Registered');
             // register flight
-
             callback();
-        });
     }
 
     isOperational(callback) {
        let self = this;
+       console.log('isOperational');
        self.flightSuretyApp.methods
             .isOperational()
             .call({ from: self.owner}, callback);
@@ -91,9 +80,10 @@ export default class Contract {
         let payload = {
             flight: flight,
         } 
+        console.log('getFlightDetails');
         self.flightSuretyApp.methods
             .getFlightDetails(payload.flight)
-            .call({ from: self.owner}, (error, result) => {
+            .send({ from: self.owner}, (error, result) => {
                 callback(error, payload);
             });
     }
