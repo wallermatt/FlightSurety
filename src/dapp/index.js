@@ -26,12 +26,22 @@ import './flightsurety.css';
             });
         })
 
-         // User-submitted transaction
-         DOM.elid('get-flight-details').addEventListener('click', () => {
+        // User-submitted transaction
+        DOM.elid('get-flight-details').addEventListener('click', () => {
             let flight = DOM.elid('flight-number').value;
             // Write transaction
             contract.getFlightDetails(flight, (error, result) => {
-                display('Dapp', 'Get Flight Details', [ { label: 'Get Flight Details', error: error, value: result.flight + ' ' + result.timestamp} ]);
+                display('Dapp', 'Get Flight Details', [ { label: 'Get Flight Details', error: flight, error, value: flight + ' ' + 'isRegistered: ' + result[0] + ' statusCode: ' + result[1]} ]);
+            });
+        })
+
+         // User-submitted transaction
+         DOM.elid('buy-insurance').addEventListener('click', () => {
+            let flight = DOM.elid('flight-number').value;
+            let value_ = DOM.elid('insurance-value').value;
+            // Write transaction
+            contract.buyInsurance(flight, value_, (error) => {
+                display('Dapp', 'Buy Insurance', [ { label: 'Buy Insurance', error: flight, error, value: flight } ]);
             });
         })
     

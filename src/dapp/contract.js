@@ -83,8 +83,23 @@ export default class Contract {
         console.log('getFlightDetails');
         self.flightSuretyApp.methods
             .getFlightDetails(payload.flight)
-            .send({ from: self.owner}, (error, result) => {
-                callback(error, payload);
+            .call({ from: self.owner}, (error, result) => {
+                console.log('***result***', result);
+                callback(error, result);
+            });
+    }
+
+    buyInsurance(flight, callback) {
+        let self = this;
+        let payload = {
+            flight: flight,
+        } 
+        console.log('Buy Insurance');
+        self.flightSuretyApp.methods
+            .buyInsurance(payload.flight)
+            .send({ from: self.owner}, (error) => {
+                console.log('***Buy insurance***');
+                callback(error);
             });
     }
 
