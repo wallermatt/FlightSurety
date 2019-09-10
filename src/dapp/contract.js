@@ -22,6 +22,8 @@ export default class Contract {
 
 
         this.owner = accounts[0];
+        this.airline = accounts[1];
+        this.passenger = accounts[5];
 
 
             console.log('Register App contract');
@@ -84,23 +86,19 @@ export default class Contract {
         self.flightSuretyApp.methods
             .getFlightDetails(payload.flight)
             .call({ from: self.owner}, (error, result) => {
-                console.log('***result***', result);
                 callback(error, result);
             });
     }
 
-    buyInsurance(flight, callback) {
+    buyInsurance(flight, value_, callback) {
         let self = this;
         let payload = {
             flight: flight,
-        } 
+        }
         console.log('Buy Insurance');
         self.flightSuretyApp.methods
             .buyInsurance(payload.flight)
-            .send({ from: self.owner}, (error) => {
-                console.log('***Buy insurance***');
-                callback(error);
-            });
+            .send({from: self.passenger, value: this.web3.utils.toWei(value_, "ether"), gas: 1500000}, callback);
     }
 
 
