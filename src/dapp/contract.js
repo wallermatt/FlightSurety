@@ -66,12 +66,11 @@ export default class Contract {
     fetchFlightStatus(flight, callback) {
         let self = this;
         let payload = {
-            airline: self.airlines[0],
             flight: flight,
-            timestamp: Math.floor(Date.now() / 1000)
-        } 
+        }
+        console.log('Fetch flight status')
         self.flightSuretyApp.methods
-            .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
+            .fetchFlightStatus(payload.flight)
             .send({ from: self.owner}, (error, result) => {
                 callback(error, payload);
             });
@@ -101,6 +100,27 @@ export default class Contract {
             .send({from: self.passenger, value: this.web3.utils.toWei(value_, "ether"), gas: 1500000}, callback);
     }
 
+    cancelInsurance(flight, callback) {
+        let self = this;
+        let payload = {
+            flight: flight,
+        }
+        console.log('Cancel Insurance');
+        self.flightSuretyApp.methods
+            .buyInsurance(payload.flight)
+            .send({from: self.passenger, gas: 1500000}, callback);
+    }
 
-    // get flight status
+    payoutInsurance(flight, callback) {
+        let self = this;
+        let payload = {
+            flight: flight,
+        }
+        console.log('Payout Insurance');
+        self.flightSuretyApp.methods
+            .payoutInsurance(payload.flight)
+            .send({from: self.passenger, gas: 1500000}, callback);
+    }
+
+
 }

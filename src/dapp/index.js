@@ -35,13 +35,31 @@ import './flightsurety.css';
             });
         })
 
-         // User-submitted transaction
-         DOM.elid('buy-insurance').addEventListener('click', () => {
+        // User-submitted transaction
+        DOM.elid('buy-insurance').addEventListener('click', () => {
             let flight = DOM.elid('flight-number').value;
             let value_ = DOM.elid('insurance-value').value;
             // Write transaction
             contract.buyInsurance(flight, value_, (error) => {
                 display('Dapp', 'Buy Insurance', [ { label: 'Buy Insurance', error: flight, error, value: flight } ]);
+            });
+        })
+
+        // User-submitted transaction
+        DOM.elid('cancel-insurance').addEventListener('click', () => {
+            let flight = DOM.elid('flight-number').value;
+            // Write transaction
+            contract.cancelInsurance(flight, (error) => {
+                display('Dapp', 'Cancel Insurance', [ { label: 'Cancel Insurance', error: flight, error, value: flight } ]);
+            });
+        })
+
+        // User-submitted transaction
+        DOM.elid('payout-insurance').addEventListener('click', () => {
+            let flight = DOM.elid('flight-number').value;
+            // Write transaction
+            contract.payoutInsurance(flight, (error) => {
+                display('Dapp', 'Payout Insurance', [ { label: 'Payout Insurance', error: flight, error, value: flight } ]);
             });
         })
     
