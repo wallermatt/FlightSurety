@@ -18,17 +18,7 @@ let flightSuretyData = new web3.eth.Contract(FlightSuretyData.abi, config.dataAd
 
 (async() => {
   console.log('async');
-  /*
-  const TEST_ORACLES_COUNT = 10;
-  let accounts = await web3.eth.getAccounts();
-  let fee = await config.flightSuretyApp.REGISTRATION_FEE.call({from: accounts[0]});
-
-  for(let a=1; a<TEST_ORACLES_COUNT; a++) {      
-    await config.flightSuretyApp.registerOracle({ from: accounts[a], value: fee });
-    let result = await config.flightSuretyApp.getMyIndexes.call({from: accounts[a]});
-    console.log(`Oracle Registered: ${result[0]}, ${result[1]}, ${result[2]}`);
-  }
-  */
+  
 
 })();
 
