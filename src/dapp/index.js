@@ -1,4 +1,5 @@
-
+require("babel-core/register");
+require("babel-polyfill");
 import DOM from './dom';
 import Contract from './contract';
 import './flightsurety.css';
