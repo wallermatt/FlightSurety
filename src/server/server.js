@@ -12,13 +12,12 @@ let flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddre
 
 console.log("Run server");
 
-
+const TEST_ORACLES_COUNT = 10;
 let flightSuretyData = new web3.eth.Contract(FlightSuretyData.abi, config.dataAddress);
-
+let oracleList = [];
 
 (async() => {
   console.log('async');
-  const TEST_ORACLES_COUNT = 10;
   let accounts = await web3.eth.getAccounts();
   console.log('Accounts');
   let fee = await flightSuretyApp.methods.REGISTRATION_FEE().call({from: accounts[0]});
@@ -27,10 +26,9 @@ let flightSuretyData = new web3.eth.Contract(FlightSuretyData.abi, config.dataAd
   for(let a=1; a<TEST_ORACLES_COUNT; a++) {      
     await flightSuretyApp.methods.registerOracle().send({ from: accounts[a], value: fee, gas: 3000000 });
     let result = await flightSuretyApp.methods.getMyIndexes().call({from: accounts[a]});
+    oracleList.push({'account': accounts[a],'indexes': result});
     console.log(`Oracle Registered: ${result[0]}, ${result[1]}, ${result[2]}`);
-    
   }
-
 
 })();
 
@@ -38,8 +36,28 @@ let flightSuretyData = new web3.eth.Contract(FlightSuretyData.abi, config.dataAd
 flightSuretyApp.events.OracleRequest({
     fromBlock: 0
   }, function (error, event) {
-    if (error) console.log(error)
-    console.log(event)
+    if (error) {
+      console.log(error);
+    }
+    else {
+      if (oracleList.length == 0){
+        console.log('No oracles registered yet!!!');
+        return;
+      }
+      console.log('Oracle Request Event Detected');
+      let statusCodeLate = 20;
+      console.log(event.returnValues.flightCodeDate, event.returnValues.index);
+      for(let a=0; a<(TEST_ORACLES_COUNT - 1); a++) {
+        console.log('Oracle Request Event Detected', a, oracleList[a]['account'], oracleList[a]['indexes']);
+        if (event.returnValues.index in oracleList[a]['indexes']) {
+          flightSuretyApp.methods.submitOracleResponse(
+            event.returnValues.index,
+            event.returnValues.flightCodeDate,
+            statusCodeLate
+          ).send({from: oracleList[a]['account'], gas:5000000});
+        }
+      }
+    }
 });
 
 const app = express();
