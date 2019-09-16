@@ -45,16 +45,17 @@ flightSuretyApp.events.OracleRequest({
         return;
       }
       console.log('Oracle Request Event Detected');
-      let statusCodeLate = 20;
+      let statusCode = Math.floor(Math.random() * 6) * 10;
       console.log(event.returnValues.flightCodeDate, event.returnValues.index);
       for(let a=0; a<(TEST_ORACLES_COUNT - 1); a++) {
         console.log('Oracle Request Event Detected', a, oracleList[a]['account'], oracleList[a]['indexes']);
-        if (event.returnValues.index in oracleList[a]['indexes']) {
+        if (oracleList[a]['indexes'].includes(event.returnValues.index)) {
           flightSuretyApp.methods.submitOracleResponse(
             event.returnValues.index,
             event.returnValues.flightCodeDate,
-            statusCodeLate
+            statusCode
           ).send({from: oracleList[a]['account'], gas:5000000});
+          console.log('Submitted Oracle Request');
         }
       }
     }
